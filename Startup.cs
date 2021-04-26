@@ -30,6 +30,7 @@ namespace ApiCatalogo
         {
 
             services.AddDbContext<AppDbContext>(options => options.UseMySql(Configuration.GetConnectionString("DefaultConnection"), ServerVersion.AutoDetect(Configuration.GetConnectionString("DefaultConnection"))));
+            //services.AddDbContext<AppDbContext>(options => options.UseSqlServer(Configuration.GetConnectionString("SqlDbConnection")));
             services.AddControllers();
             services.AddSwaggerGen(c =>
             {
