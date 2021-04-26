@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using ApiCatalogo.Context;
 using ApiCatalogo.Models;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -19,15 +20,31 @@ namespace ApiCatalogo.Controllers
 
         [HttpGet]
         public ActionResult<IEnumerable<Produto>> Get(){
-            return _context.Produtos.ToList();
+            try
+            {
+                return _context.Produtos.AsNoTracking().ToList();
+            }
+            catch (System.Exception)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, "Erro ao tentar obter as categorias do banco de dados");
+            }
         }
 
         [HttpGet("{id}", Name= "ObterProduto")]
         public ActionResult<Produto> Get(int id)
         {
-            var produto = _context.Produtos.FirstOrDefault(x => x.ProdutoId == id);
+            try
+            {
 
-            return produto == null ? NotFound() : produto;
+                var produto = _context.Produtos.AsNoTracking().FirstOrDefault(x => x.ProdutoId == id);
+
+                return produto == null ? NotFound($"O produto com o id={id} não foi encontrado") : produto;
+            }
+            catch (System.Exception)
+            {
+
+                return StatusCode(StatusCodes.Status500InternalServerError, "Erro ao tentar obter as categorias do banco de dados");
+            }
         }
 
         [HttpPost]
@@ -45,14 +62,23 @@ namespace ApiCatalogo.Controllers
         [HttpPut("{id}")]
         public ActionResult Put(int id, [FromBody] Produto produto)
         {
-            if (!ModelState.IsValid)
-                return BadRequest();
-            if (id == produto.ProdutoId)
-                return BadRequest();
+            try
+            {
+                if (!ModelState.IsValid)
+                    return BadRequest();
+                if (id == produto.ProdutoId)
+                    return BadRequest();
 
-            _context.Entry(produto).State = EntityState.Modified;
-            _context.SaveChanges();
-            return Ok();
+                _context.Entry(produto).State = EntityState.Modified;
+                _context.SaveChanges();
+                return Ok("Categoria alterada com sucesso");
+
+            }
+            catch (System.Exception)
+            {
+
+                return StatusCode(StatusCodes.Status500InternalServerError, "Erro ao tentar atualizar");
+            }
         }
 
         [HttpDelete("{id}")]
